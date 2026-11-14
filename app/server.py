@@ -3,8 +3,10 @@ from pathlib import Path
 from datetime import date
 from math import radians, sin
 
+import csv
+import io
 import duckdb
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, Response
 
 ROOT = Path(__file__).resolve().parents[1]
 DB_FILE = ROOT / "data" / "processed" / "firetrace.duckdb"
@@ -878,7 +880,69 @@ def harmonization():
             "error": "Unable to calculate harmonized activity."
         }), 500
 
+@app.route("/api/harmonization/download")
+def harmonization_download():
+    start_date = request.args.get("start", DEFAULT_START)
+    end_date = request.args.get("end", DEFAULT_END)
 
+    query = """
+        WITH weekly AS (
+            SELECT sensor_family,
+                   (FLOOR(latitude / 0.25) + 0.5) * 0.25 AS grid_lat,
+                   (FLOOR(longitude / 0.25) + 0.5) * 0.25 AS grid_lon,
+                   DATE_TRUNC('week', acq_date)::DATE AS week,
+                   COUNT(*) AS detections
+            FROM observations
+            WHERE data_stream = 'ARCHIVE'
+              AND acq_date BETWEEN ? AND ?
+            GROUP BY 1, 2, 3, 4
+        ),
+        totals AS (
+            SELECT sensor_family, week, SUM(detections) AS total
+            FROM weekly GROUP BY 1, 2
+        ),
+        norm AS (
+            SELECT w.*, w.detections * 100000.0 / NULLIF(t.total, 0) AS idx
+            FROM weekly w
+            JOIN totals t ON w.sensor_family = t.sensor_family
+                         AND w.week = t.week
+        ),
+        combined AS (
+            SELECT grid_lat, grid_lon, week,
+                   MAX(CASE WHEN sensor_family = 'MODIS' THEN detections ELSE 0 END) AS modis,
+                   MAX(CASE WHEN sensor_family = 'VIIRS' THEN detections ELSE 0 END) AS viirs,
+                   MAX(CASE WHEN sensor_family = 'MODIS' THEN idx END) AS modis_index,
+                   MAX(CASE WHEN sensor_family = 'VIIRS' THEN idx END) AS viirs_index
+            FROM norm GROUP BY 1, 2, 3
+        )
+        SELECT grid_lat, grid_lon, week, modis, viirs,
+               ROUND(modis_index, 4), ROUND(viirs_index, 4),
+               CASE WHEN modis > 0 AND viirs > 0 THEN 'BOTH'
+                    WHEN modis > 0 THEN 'MODIS_ONLY'
+                    ELSE 'VIIRS_ONLY' END
+        FROM combined
+        ORDER BY week, grid_lat, grid_lon
+    """
+
+    with duckdb.connect(str(DB_FILE), read_only=True) as con:
+        rows = con.execute(query, [start_date, end_date]).fetchall()
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow([
+        "grid_lat", "grid_lon", "week_start",
+        "modis_detections", "viirs_detections",
+        "modis_activity_index", "viirs_activity_index",
+        "agreement"
+    ])
+    writer.writerows(rows)
+
+    return Response(
+        buffer.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition":
+                 "attachment; filename=firetrace_harmonized_weekly_grid.csv"}
+    )
 
 if __name__ == "__main__":
     if not DB_FILE.exists():

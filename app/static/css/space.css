@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&display=swap');
+:root{--accent:#59d9f2;--nasa:#fc3d21;--glass:rgba(6,13,28,.76);--head:'Chakra Petch','Space Grotesk',sans-serif}
+html{font-size:18px}
+body{background:#02040b!important;font-size:1.05rem;line-height:1.65}
+body::before{opacity:.22}
+#space-bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.topbar,.dashboard{position:relative;z-index:2}
+.topbar{margin-top:78px}
+section{scroll-margin-top:92px}
+h1,h2,h3,h4,.stat-card strong,.comparison-card strong,.persistence-stat strong,.data-period strong{font-family:var(--head)!important;letter-spacing:.005em}
+h3{font-size:1.65rem!important}h4{font-size:1.3rem!important}
+p,li,td,th,label,.status-message,.calendar-description,.chart-note{font-size:1.05rem!important}
+small{font-size:.95rem!important}
+.eyebrow{font-size:.85rem!important;letter-spacing:.1em;color:var(--accent)!important}
+select,button,input{font-size:1rem!important}
+.brand h1{font-size:1.7rem!important}
+.intro{min-height:72vh;align-items:center;padding-top:3rem}
+.intro h2{font-size:clamp(2.5rem,5vw,4.5rem)!important;line-height:1.08;max-width:15ch}
+.intro h2 span{background:linear-gradient(90deg,#59d9f2,#b58cff 55%,#ff945b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.intro-text{font-size:1.3rem!important;max-width:44rem;color:#c9d8e8}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap;margin:1.6rem 0 1rem}
+.cta{font:600 1.05rem var(--head);padding:.85rem 1.5rem;border-radius:999px;text-decoration:none;color:#fff;border:1px solid rgba(255,255,255,.35);cursor:pointer;background:transparent}
+.cta.primary{background:var(--nasa);border-color:var(--nasa);box-shadow:0 0 30px rgba(252,61,33,.45)}
+.cta:hover{transform:translateY(-2px)}
+.team-line{color:#9fb4c9;font-size:1rem}.team-line b{color:#fff;font-family:var(--head)}
+.calendar-panel,.filter-panel,.info-card,.stat-card,.platform-panel,.comparison-card,.persistence-stat,.comparison-chart-panel,.persistence-table-panel,.scientific-note,.data-period,.mission-card,.pipeline li,.team-card{background:var(--glass)!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(132,174,207,.2)!important;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+section[data-sec]{border-top:3px solid var(--accent)!important}
+section[data-sec] h3{text-shadow:0 0 26px color-mix(in srgb,var(--accent) 60%,transparent)}
+#map{min-height:600px}
+.table-scroll{max-height:640px}
+.topn-wrap{display:inline-flex;align-items:center;gap:.6rem;font:600 1rem var(--head);color:#dfe9f4}
+.topn{background:#0a1730;color:#fff;border:1px solid var(--accent);border-radius:8px;padding:.45rem .8rem}
+.mission{margin:2rem 0 3rem;padding:2.2rem 0}
+.mission h2{font:700 clamp(2rem,3.6vw,3.2rem) var(--head);margin:.3rem 0 1rem;max-width:22ch}
+.lead{font-size:1.25rem!important;max-width:52rem;color:#c9d8e8}
+.mission-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin:2rem 0}
+.mission-card{padding:1.5rem;border-radius:16px;border-top:3px solid var(--c)!important}
+.mission-card h3{margin:.2rem 0 .6rem}
+.pipeline{list-style:none;counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;padding:0;margin:0 0 2rem}
+.pipeline li{counter-increment:s;padding:1.3rem;border-radius:16px;position:relative}
+.pipeline li::before{content:counter(s);font:700 2.2rem var(--head);color:var(--nasa);display:block}
+.pipeline b{display:block;font:600 1.2rem var(--head);margin-bottom:.3rem}
+.team-card{display:flex;gap:1.2rem;align-items:center;padding:1.4rem 1.8rem;border-radius:16px;border-left:4px solid var(--nasa)!important}
+.team-card strong{font:700 1.4rem var(--head);display:block}
+#spacenav{position:fixed;top:0;left:0;right:0;height:64px;z-index:1000;display:flex;align-items:center;gap:14px;padding:0 20px;background:rgba(2,4,11,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(132,174,207,.18)}
+#spacenav .nb{font:700 1.15rem var(--head);color:#fff;white-space:nowrap}
+#spacenav .nb i{color:var(--nasa);font-style:normal}
+.nav-links{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links button{background:transparent;border:1px solid transparent;color:#b9c9db;font:600 .95rem var(--head)!important;padding:.45rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap}
+.nav-links button:hover{color:#fff;border-color:rgba(255,255,255,.25)}
+.nav-links button.on{color:#fff;border-color:var(--c);box-shadow:0 0 16px -2px var(--c)}
+.nav-menu{background:var(--nasa);color:#fff;border:0;border-radius:999px;font:600 .95rem var(--head)!important;padding:.55rem 1.1rem;cursor:pointer}
+#navpop{position:fixed;top:72px;right:16px;width:min(580px,calc(100vw - 32px));display:none;grid-template-columns:1fr 1fr;gap:10px;padding:14px;background:rgba(4,9,20,.97);border:1px solid rgba(132,174,207,.28);border-radius:16px;z-index:1001;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+#navpop.open{display:grid;animation:pop .22s ease}
+@keyframes pop{from{opacity:0;transform:translateY(-8px) scale(.97)}}
+#navpop button{text-align:left;background:rgba(255,255,255,.04);color:#fff;border:1px solid rgba(255,255,255,.1);border-left:4px solid var(--c);border-radius:10px;padding:.7rem .9rem;cursor:pointer}
+#navpop button:hover{background:rgba(255,255,255,.1)}
+#navpop b{display:block;font:600 1.05rem var(--head)}#navpop span{font-size:.88rem;color:#9fb4c9}
+.reveal{opacity:0;transform:translateY(46px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+footer{position:relative;z-index:2;background:var(--glass);backdrop-filter:blur(10px);font-size:.95rem}
+@media(max-width:760px){.nav-links{display:none}#navpop{grid-template-columns:1fr}.intro{min-height:auto}html{font-size:16.5px}}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}

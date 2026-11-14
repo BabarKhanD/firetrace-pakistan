@@ -730,7 +730,7 @@ async function loadPersistence() {
 
     params.set("start", elements.start.value);
     params.set("end", elements.end.value);
-    params.set("limit", "20");
+    params.set("limit", document.getElementById("persistenceLimit").value);
 
     elements.persistenceStatus.textContent =
         "Analyzing historical hotspot persistence...";
@@ -909,7 +909,7 @@ async function loadConcentration() {
 
     params.set("start", elements.start.value);
     params.set("end", elements.end.value);
-    params.set("limit", "20");
+    params.set("limit", document.getElementById("concentrationLimit").value);
 
     elements.concentrationStatus.textContent =
         "Calculating hotspot detection concentration...";

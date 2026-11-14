@@ -8,10 +8,12 @@
     <title>FireTrace Pakistan | Satellite Fire Intelligence</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/space.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 
 <body>
+<canvas id="space-bg"></canvas>
 
     <header class="topbar">
         <div class="brand">
@@ -35,18 +37,11 @@
         <!-- INTRODUCTION -->
         <section class="intro">
             <div>
-                <p class="eyebrow">PAKISTAN · EARTH OBSERVATION</p>
-
-                <h2>
-                    Understand fire activity.
-                    <br>
-                    <span>Across time and space.</span>
-                </h2>
-
-                <p class="intro-text">
-                    Explore active-fire detections from NASA FIRMS MODIS and
-                    VIIRS satellite observations across Pakistan.
-                </p>
+                <p class="eyebrow">NASA SPACE APPS CHALLENGE 2026 · PAKISTAN</p>
+                <h2>Harmonizing 26 years of satellite fire detections.</h2>
+                <p class="intro-text">FireTrace aligns NASA FIRMS MODIS and VIIRS hot-spot observations on one grid and one timeline, so the differences between the two sensor families can be measured instead of assumed.</p>
+                <div class="cta-row"><a class="cta primary" href="#" data-goto="#harmonization">See the harmonization</a><a class="cta" href="#" data-goto=".workspace">Explore the map</a></div>
+                <p class="team-line">Team <b>Me, Myself &amp; MODIS</b> · Babar Khan Durrani</p>
             </div>
 
             <div class="data-period">
@@ -54,6 +49,25 @@
                 <strong>2000 — 2026</strong>
                 <small>Last available observation: 12 Nov 2026</small>
             </div>
+        </section>
+
+
+        <section id="mission" class="mission">
+            <p class="eyebrow">MISSION OVERVIEW</p>
+            <h2>Two satellite families, one comparable record.</h2>
+            <p class="lead">MODIS has observed Pakistan since 2000 at roughly 1 km resolution. VIIRS adds a 375 m view from 2012. Their raw detection counts are not directly comparable, so this platform brings both onto a common spatial and temporal footing.</p>
+            <div class="mission-grid">
+                <article class="mission-card" style="--c:#fc3d21"><p class="eyebrow">THE PROBLEM</p><h3>Counts that cannot be compared</h3><p>Different resolution, coverage and operating periods make raw MODIS and VIIRS totals misleading when set side by side.</p></article>
+                <article class="mission-card" style="--c:#b58cff"><p class="eyebrow">THE APPROACH</p><h3>A shared grid and timeline</h3><p>Detections are aggregated to 0.25° cells and weekly intervals, then normalized within each sensor family before comparison.</p></article>
+                <article class="mission-card" style="--c:#59d9f2"><p class="eyebrow">THE RESULT</p><h3>Agreement you can measure</h3><p>Each cell-week is classified as seen by both sensors, MODIS only or VIIRS only, with a correlation of relative activity.</p></article>
+            </div>
+            <ol class="pipeline">
+                <li><b>Ingest</b>Four NASA FIRMS feeds: MODIS, Suomi-NPP, NOAA-20 and NOAA-21 VIIRS.</li>
+                <li><b>Standardize</b>One schema, one sensor-family label, archive and near-real-time streams tagged.</li>
+                <li><b>Grid and bin</b>0.25° cells and weekly intervals across 2000 to 2026.</li>
+                <li><b>Normalize and compare</b>Activity index per sensor, then agreement classes and correlation.</li>
+            </ol>
+            <div class="team-card"><div><strong>Me, Myself &amp; MODIS</strong><span>Babar Khan Durrani · NASA Space Apps Challenge 2026</span></div></div>
         </section>
 
 
@@ -421,7 +435,10 @@
                 <div id="harmonizationSummary" class="comparison-chart">
                     <p>Loading cross-sensor analysis...</p>
                 </div>
-
+                <a id="downloadHarmonization" class="cta primary" href="/api/harmonization/download" download
+                   style="display:inline-block;margin-top:1.2rem">
+                    Download harmonized data (CSV)
+                </a>
             </div>
 
 
@@ -536,7 +553,7 @@
                         <h3>Ranked Grid Cells</h3>
                     </div>
 
-                    <span class="map-tag">TOP 20</span>
+                    <label class="topn-wrap">Show top <select id="persistenceLimit" class="topn"><option value="5">5</option><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select></label>
                 </div>
 
 
@@ -678,7 +695,7 @@
                         <h3>Ranked Grid Cells</h3>
                     </div>
 
-                    <span class="map-tag">TOP 20</span>
+                    <label class="topn-wrap">Show top <select id="concentrationLimit" class="topn"><option value="5">5</option><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select></label>
                 </div>
 
 
@@ -841,8 +858,7 @@
             <span>FIRETRACE PAKISTAN</span>
 
             <span>
-                Research and decision-support prototype ·
-                Not an official early-warning service
+                NASA Space Apps Challenge 2026 · Team Me, Myself &amp; MODIS · Babar Khan Durrani · Research prototype, not an official early-warning service and not endorsed by NASA
             </span>
         </footer>
 
@@ -854,6 +870,7 @@
 
     <!-- PROJECT JAVASCRIPT -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/space.js') }}"></script>
 
 </body>
 
