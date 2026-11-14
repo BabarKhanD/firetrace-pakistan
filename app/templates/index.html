@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FireTrace Pakistan | Satellite Fire Intelligence</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-mark">FT</div>
+
+            <div>
+                <h1>FireTrace <span>Pakistan</span></h1>
+                <p>Satellite Fire Intelligence Platform</p>
+            </div>
+        </div>
+
+        <div class="header-status">
+            <span class="status-dot"></span>
+            HISTORICAL DATA SYSTEM
+        </div>
+    </header>
+
+
+    <main class="dashboard">
+
+        <!-- INTRODUCTION -->
+        <section class="intro">
+            <div>
+                <p class="eyebrow">PAKISTAN · EARTH OBSERVATION</p>
+
+                <h2>
+                    Understand fire activity.
+                    <br>
+                    <span>Across time and space.</span>
+                </h2>
+
+                <p class="intro-text">
+                    Explore active-fire detections from NASA FIRMS MODIS and
+                    VIIRS satellite observations across Pakistan.
+                </p>
+            </div>
+
+            <div class="data-period">
+                <span>DATA COVERAGE</span>
+                <strong>2000 — 2026</strong>
+                <small>Last available observation: 12 Nov 2026</small>
+            </div>
+        </section>
+
+
+        <!-- DASHBOARD SUMMARY -->
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <span>TOTAL DETECTIONS</span>
+                <strong id="totalDetections">—</strong>
+                <small>Within selected filters</small>
+            </article>
+
+            <article class="stat-card">
+                <span>GRID CELLS</span>
+                <strong id="gridCells">—</strong>
+                <small>0.25° aggregation grid</small>
+            </article>
+
+            <article class="stat-card">
+                <span>ACTIVE SENSOR</span>
+                <strong id="activeSensor">ALL</strong>
+                <small>MODIS / VIIRS</small>
+            </article>
+
+            <article class="stat-card">
+                <span>DATA STREAM</span>
+                <strong id="activeStream">ALL</strong>
+                <small>Archive and near-real-time</small>
+            </article>
+
+        </section>
+
+
+        <!-- MAP AND FILTERS -->
+        <section class="workspace">
+
+            <div class="map-panel">
+
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">GEOGRAPHIC EXPLORER</p>
+                        <h3>Pakistan Fire Activity Map</h3>
+                    </div>
+
+                    <span class="map-tag">SATELLITE DETECTIONS</span>
+                </div>
+
+                <div id="map"></div>
+
+                <div class="map-legend">
+                    <span>
+                        <i class="legend-dot low"></i>
+                        Lower detection count
+                    </span>
+
+                    <span>
+                        <i class="legend-dot medium"></i>
+                        Moderate
+                    </span>
+
+                    <span>
+                        <i class="legend-dot high"></i>
+                        Higher detection count
+                    </span>
+                </div>
+
+            </div>
+
+
+            <aside class="filter-panel">
+
+                <p class="eyebrow">DATA CONTROLS</p>
+                <h3>Filter observations</h3>
+
+                <label for="startDate">Start date</label>
+                <input type="date" id="startDate" value="2000-11-01">
+
+                <label for="endDate">End date</label>
+                <input type="date" id="endDate" value="2026-11-12">
+
+                <label for="sensor">Sensor family</label>
+                <select id="sensor">
+                    <option value="ALL">All sensors</option>
+                    <option value="MODIS">MODIS</option>
+                    <option value="VIIRS">VIIRS</option>
+                </select>
+
+                <label for="satellite">Satellite platform</label>
+                <select id="satellite">
+                    <option value="ALL">All platforms</option>
+                    <option value="TERRA">Terra</option>
+                    <option value="AQUA">Aqua</option>
+                    <option value="SNPP">Suomi-NPP</option>
+                    <option value="N20">NOAA-20</option>
+                    <option value="N21">NOAA-21</option>
+                </select>
+
+                <label for="stream">Data stream</label>
+                <select id="stream">
+                    <option value="ALL">Archive + NRT</option>
+                    <option value="ARCHIVE">Standard archive</option>
+                    <option value="NRT">Near-real-time</option>
+                </select>
+
+                <button id="applyFilters">Apply filters</button>
+                <button id="resetFilters" class="secondary-button">Reset filters</button>
+
+                <p id="statusMessage" class="status-message">
+                    Ready to load observations.
+                </p>
+
+            </aside>
+
+        </section>
+
+
+        <!-- SENSOR COMPARISON -->
+        <section class="calendar-panel comparison-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">CROSS-SENSOR ANALYSIS</p>
+                    <h3>MODIS vs VIIRS</h3>
+
+                    <p class="calendar-description">
+                        Compare satellite detection observations across the same selected time period.
+                    </p>
+                </div>
+
+                <span class="map-tag">SENSOR COMPARISON</span>
+            </div>
+
+
+            <div class="comparison-controls">
+
+                <div>
+                    <label for="comparisonStream">Comparison data stream</label>
+
+                    <select id="comparisonStream">
+                        <option value="ALL">Archive + NRT</option>
+                        <option value="ARCHIVE">Standard archive</option>
+                        <option value="NRT">Near-real-time</option>
+                    </select>
+                </div>
+
+                <button id="refreshComparison">Update comparison</button>
+
+            </div>
+
+
+            <div id="comparisonStatus" class="status-message">
+                Loading sensor comparison...
+            </div>
+
+
+            <div class="comparison-summary">
+
+                <article class="comparison-card modis-card">
+                    <span class="comparison-label">MODIS</span>
+                    <strong id="modisTotal">—</strong>
+                    <small>Satellite detection observations</small>
+
+                    <div class="comparison-bar">
+                        <div id="modisBar"></div>
+                    </div>
+                </article>
+
+                <article class="comparison-card viirs-card">
+                    <span class="comparison-label">VIIRS</span>
+                    <strong id="viirsTotal">—</strong>
+                    <small>Satellite detection observations</small>
+
+                    <div class="comparison-bar">
+                        <div id="viirsBar"></div>
+                    </div>
+                </article>
+
+            </div>
+
+
+            <div class="comparison-chart-panel">
+
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">TEMPORAL COMPARISON</p>
+                        <h3>Monthly Detection Trends</h3>
+                    </div>
+                </div>
+
+                <div id="comparisonChart" class="comparison-chart">
+                    <p>Waiting for comparison data...</p>
+                </div>
+
+            </div>
+
+
+            <div class="platform-panel">
+
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">PLATFORM CONTRIBUTION</p>
+                        <h3>Detection Breakdown by Satellite</h3>
+                    </div>
+                </div>
+
+                <div id="platformBreakdown" class="platform-breakdown">
+                    <p>Loading platform statistics...</p>
+                </div>
+
+            </div>
+
+
+            <!-- PAKISTAN REGIONAL CASE STUDY -->
+            <div class="comparison-chart-panel">
+
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">PAKISTAN REGIONAL CASE STUDY</p>
+                        <h3>Historical Hotspot Activity</h3>
+                        <small>Selected 0.25° grid cell: 25.375°N, 68.625°E</small>
+                    </div>
+                </div>
+
+                <div class="comparison-chart">
+                    <div class="comparison-card">
+                        <span class="comparison-label">Total archive detections</span>
+                        <strong>16,440</strong>
+                        <small>MODIS: 1,678 · VIIRS: 14,762</small>
+                    </div>
+
+                    <div class="comparison-card">
+                        <span class="comparison-label">Active days</span>
+                        <strong>4,383</strong>
+                        <small>Distinct dates with at least one detection</small>
+                    </div>
+                </div>
+
+                <div class="panel-heading">
+                    <div>
+                        <h4>Monthly Detection Distribution</h4>
+                        <small>Raw archive detections accumulated across available years</small>
+                    </div>
+                </div>
+
+                <div id="caseStudyChart" class="comparison-chart">
+                    <p>Loading Pakistan case study...</p>
+                </div>
+
+                <div class="scientific-note">
+                    <h4>What the observations show</h4>
+                    <p>
+                        This grid cell contains repeated satellite-observed hotspot
+                        detections across multiple years. MODIS observations are
+                        concentrated in January, February and December. VIIRS also
+                        records substantial activity in these months, alongside
+                        detections throughout the rest of the year.
+                    </p>
+                    <p>
+                        MODIS and VIIRS counts are shown separately because their
+                        observation periods, spatial resolutions, coverage and
+                        detection characteristics differ. These are observations,
+                        not unique fires or burned area. The grid cell does not
+                        represent a precise fire boundary or a specific fire cause.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="scientific-note">
+
+                <p class="eyebrow">INTERPRETATION & LIMITATIONS</p>
+                <h4>Detection counts are not unique fire incidents</h4>
+
+                <p>
+                    MODIS and VIIRS differ in spatial resolution, observation
+                    characteristics and operational periods. Their raw
+                    detection counts should not be interpreted as directly
+                    equivalent measures of fire occurrence or sensor
+                    performance. VIIRS observations begin in 2012, while
+                    MODIS observations extend back to 2000.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- HISTORICAL SEASONAL ACTIVITY -->
+        <section class="calendar-panel seasonality-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">LONG-TERM TEMPORAL ANALYSIS</p>
+                    <h3>Historical Seasonal Fire Activity</h3>
+
+                    <p class="calendar-description">
+                        Explore how the monthly distribution of satellite
+                        fire detections varies across the historical record.
+                    </p>
+                </div>
+
+                <span class="map-tag">SEASONAL ANALYSIS</span>
+            </div>
+
+
+            <div class="persistence-intro">
+                <p>
+                    Each month's share is calculated within its own year's
+                    total detections, then averaged across the historical
+                    period. MODIS and VIIRS are analyzed separately.
+                </p>
+            </div>
+
+
+            <div class="comparison-summary">
+
+                <article class="comparison-card modis-card">
+                    <span class="comparison-label">MODIS BASELINE</span>
+                    <strong>2001–2025</strong>
+                    <small>25 complete calendar years</small>
+                </article>
+
+                <article class="comparison-card viirs-card">
+                    <span class="comparison-label">VIIRS BASELINE</span>
+                    <strong>2012–2025</strong>
+                    <small>14 complete calendar years</small>
+                </article>
+
+            </div>
+
+
+            <div class="comparison-chart-panel">
+
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">MONTHLY DISTRIBUTION</p>
+                        <h3>Average Share of Annual Detections</h3>
+                    </div>
+                </div>
+
+                <div id="seasonalityChart" class="comparison-chart">
+                    <p>Waiting for seasonal analysis...</p>
+                </div>
+
+            </div>
+
+
+            <div id="seasonalityStatus" class="status-message">
+                Loading historical seasonal analysis...
+            </div>
+
+
+            <!-- CROSS-SENSOR DETECTION AGREEMENT -->
+            <div class="comparison-chart-panel">
+
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">MODIS + VIIRS</p>
+                        <h3>Cross-Sensor Detection Agreement</h3>
+                        <small>Weekly activity in shared 0.25° grid cells</small>
+                    </div>
+                </div>
+
+                <div id="harmonizationSummary" class="comparison-chart">
+                    <p>Loading cross-sensor analysis...</p>
+                </div>
+
+            </div>
+
+
+            <div id="harmonizationStatus" class="status-message">
+                Loading cross-sensor detection agreement...
+            </div>
+
+
+            <div class="scientific-note">
+
+                <p class="eyebrow">METHODOLOGY & LIMITATIONS</p>
+                <h4>Historical patterns are not fire predictions</h4>
+
+                <p>
+                    Monthly percentages represent the share of each
+                    sensor-family's annual detection observations, averaged
+                    across complete historical years. MODIS and VIIRS are
+                    kept separate because their sensor characteristics and
+                    coverage differ. Partial years 2000 and 2026 are excluded
+                    from the historical averages. Near-real-time observations
+                    are excluded. These patterns do not represent unique
+                    fires, burned area, fire causes, or predictions.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- HOTSPOT PERSISTENCE ANALYSIS -->
+        <section class="calendar-panel persistence-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">LONG-TERM SPATIAL ANALYSIS</p>
+                    <h3>Hotspot Persistence</h3>
+
+                    <p class="calendar-description">
+                        Identify geographic grid cells with repeated satellite
+                        fire detections across the historical record.
+                    </p>
+                </div>
+
+                <span class="map-tag">0.25° GRID ANALYSIS</span>
+            </div>
+
+
+            <div class="persistence-intro">
+                <p>
+                    Persistence measures how frequently a grid cell recorded
+                    satellite detections across distinct months and years.
+                    Cells are ranked by active years, then active months,
+                    followed by total detections.
+                </p>
+            </div>
+
+
+            <div class="persistence-summary">
+
+                <article class="persistence-stat">
+                    <span>GRID CELLS WITH DETECTIONS</span>
+                    <strong id="persistenceCells">—</strong>
+                    <small>Across selected filters</small>
+                </article>
+
+                <article class="persistence-stat">
+                    <span>TOTAL OBSERVATIONS</span>
+                    <strong id="persistenceDetections">—</strong>
+                    <small>Satellite detections</small>
+                </article>
+
+                <article class="persistence-stat">
+                    <span>MAXIMUM ACTIVE MONTHS</span>
+                    <strong id="persistenceMaxMonths">—</strong>
+                    <small>In one grid cell</small>
+                </article>
+
+                <article class="persistence-stat">
+                    <span>MAXIMUM ACTIVE YEARS</span>
+                    <strong id="persistenceMaxYears">—</strong>
+                    <small>In one grid cell</small>
+                </article>
+
+            </div>
+
+
+            <div class="persistence-controls">
+
+                <div>
+                    <p class="eyebrow">RANKING METHOD</p>
+                    <strong>Historical persistence</strong>
+                    <small>Active years → active months → detections</small>
+                </div>
+
+                <button id="refreshPersistence">
+                    Refresh analysis
+                </button>
+
+            </div>
+
+
+            <div id="persistenceStatus" class="status-message">
+                Loading persistence analysis...
+            </div>
+
+
+            <div class="persistence-table-panel">
+
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">TOP PERSISTENT LOCATIONS</p>
+                        <h3>Ranked Grid Cells</h3>
+                    </div>
+
+                    <span class="map-tag">TOP 20</span>
+                </div>
+
+
+                <div class="table-scroll">
+
+                    <table class="persistence-table">
+
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Latitude</th>
+                                <th>Longitude</th>
+                                <th>Detections</th>
+                                <th>Active Months</th>
+                                <th>Active Years</th>
+                                <th>First Detection</th>
+                                <th>Latest Detection</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="persistenceTableBody">
+                            <tr>
+                                <td colspan="8">Waiting for analysis data...</td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <div class="scientific-note">
+
+                <p class="eyebrow">SCIENTIFIC INTERPRETATION</p>
+                <h4>Persistence does not mean continuous burning</h4>
+
+                <p>
+                    Active months represent distinct calendar months containing
+                    at least one detection in a grid cell. Active years represent
+                    distinct calendar years containing detections. These values
+                    do not indicate continuous fire duration or the number of
+                    unique fire incidents. Satellite observations may include
+                    repeated detections of the same event.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- HOTSPOT CONCENTRATION ANALYSIS -->
+        <section class="calendar-panel concentration-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">SPATIAL CONCENTRATION ANALYSIS</p>
+                    <h3>Hotspot Concentration</h3>
+
+                    <p class="calendar-description">
+                        Rank geographic grid cells by satellite detection
+                        volume and detection density per square kilometre.
+                    </p>
+                </div>
+
+                <span class="map-tag">0.25° GRID ANALYSIS</span>
+            </div>
+
+
+            <div class="persistence-intro">
+                <p>
+                    This analysis identifies where satellite detection
+                    observations are most concentrated during the selected
+                    period. Cells are ranked by total detections, with
+                    detections per square kilometre used as the secondary
+                    ranking criterion.
+                </p>
+            </div>
+
+
+            <!-- CONCENTRATION SUMMARY -->
+            <div class="persistence-summary">
+
+                <article class="persistence-stat">
+                    <span>OCCUPIED GRID CELLS</span>
+                    <strong id="concentrationCells">—</strong>
+                    <small>Cells with detections</small>
+                </article>
+
+                <article class="persistence-stat">
+                    <span>TOTAL OBSERVATIONS</span>
+                    <strong id="concentrationDetections">—</strong>
+                    <small>Satellite detections</small>
+                </article>
+
+                <article class="persistence-stat">
+                    <span>HIGHEST CELL DETECTIONS</span>
+                    <strong id="concentrationMaxDetections">—</strong>
+                    <small>One 0.25° grid cell</small>
+                </article>
+
+                <article class="persistence-stat">
+                    <span>HIGHEST DETECTION DENSITY</span>
+                    <strong id="concentrationMaxDensity">—</strong>
+                    <small>Detections per km²</small>
+                </article>
+
+            </div>
+
+
+            <!-- CONCENTRATION CONTROLS -->
+            <div class="persistence-controls">
+
+                <div>
+                    <p class="eyebrow">RANKING METHOD</p>
+                    <strong>Detection concentration</strong>
+                    <small>Total detections → detections per km²</small>
+                </div>
+
+                <button id="refreshConcentration">
+                    Refresh analysis
+                </button>
+
+            </div>
+
+
+            <div id="concentrationStatus" class="status-message">
+                Loading concentration analysis...
+            </div>
+
+
+            <!-- CONCENTRATION TABLE -->
+            <div class="persistence-table-panel">
+
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">MOST CONCENTRATED LOCATIONS</p>
+                        <h3>Ranked Grid Cells</h3>
+                    </div>
+
+                    <span class="map-tag">TOP 20</span>
+                </div>
+
+
+                <div class="table-scroll">
+
+                    <table class="persistence-table concentration-table">
+
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Latitude</th>
+                                <th>Longitude</th>
+                                <th>Detections</th>
+                                <th>Cell Area (km²)</th>
+                                <th>Density (/km²)</th>
+                                <th>Average FRP</th>
+                                <th>Maximum FRP</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="concentrationTableBody">
+                            <tr>
+                                <td colspan="8">Waiting for concentration data...</td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <div class="scientific-note">
+
+                <p class="eyebrow">SCIENTIFIC INTERPRETATION</p>
+                <h4>Concentration is not the same as fire intensity</h4>
+
+                <p>
+                    Detection concentration describes the number of satellite
+                    detection observations assigned to each grid cell.
+                    Detection density divides this count by the approximate
+                    spherical area of that cell. Cell area varies with
+                    latitude. Average and maximum FRP describe the
+                    fire-radiative-power values recorded in the observations;
+                    they are not measurements of total burned area.
+                    Repeated observations may relate to the same fire.
+                    These results do not represent unique fires, fire
+                    boundaries, fire causes or continuous burning.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- HISTORICAL ACTIVITY CALENDAR -->
+        <section class="calendar-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">TEMPORAL ANALYSIS</p>
+                    <h3>Historical Burning Activity Calendar</h3>
+
+                    <p class="calendar-description">
+                        Monthly satellite detection counts across the selected sensor and platform.
+                    </p>
+                </div>
+
+                <span class="map-tag">2000–2026</span>
+            </div>
+
+
+            <div class="calendar-summary">
+
+                <div>
+                    <span>MONTHS WITH DATA</span>
+                    <strong id="calendarMonths">—</strong>
+                </div>
+
+                <div>
+                    <span>CALENDAR DETECTIONS</span>
+                    <strong id="calendarTotal">—</strong>
+                </div>
+
+            </div>
+
+
+            <div id="calendarStatus" class="status-message">
+                Loading historical activity...
+            </div>
+
+
+            <div id="activityCalendar" class="activity-calendar"></div>
+
+
+            <div class="calendar-legend">
+                <span>Lower activity</span>
+
+                <i class="calendar-swatch level-0"></i>
+                <i class="calendar-swatch level-1"></i>
+                <i class="calendar-swatch level-2"></i>
+                <i class="calendar-swatch level-3"></i>
+                <i class="calendar-swatch level-4"></i>
+
+                <span>Higher activity</span>
+            </div>
+
+        </section>
+
+
+        <!-- INFORMATION -->
+        <section class="information-grid">
+
+            <article class="info-card">
+                <p class="eyebrow">HOW TO READ THE MAP</p>
+                <h3>Detection concentration</h3>
+
+                <p>
+                    Each circle represents a 0.25° geographic grid cell.
+                    Larger circles indicate more satellite detections in
+                    that cell during the selected period.
+                </p>
+            </article>
+
+
+            <article class="info-card">
+                <p class="eyebrow">SCIENTIFIC NOTE</p>
+                <h3>Observations are not unique fires</h3>
+
+                <p>
+                    A single fire may be detected multiple times or by
+                    multiple satellites. Detection counts should not be
+                    interpreted as counts of unique fire incidents.
+                </p>
+            </article>
+
+
+            <article class="info-card">
+                <p class="eyebrow">DATA SOURCE</p>
+                <h3>NASA FIRMS</h3>
+
+                <p>
+                    Fire information is sourced from NASA's Fire
+                    Information for Resource Management System (FIRMS).
+                </p>
+
+                <a href="https://firms.modaps.eosdis.nasa.gov/"
+                   target="_blank"
+                   rel="noopener">
+                    Explore NASA FIRMS ↗
+                </a>
+            </article>
+
+        </section>
+
+
+        <!-- FOOTER -->
+        <footer>
+            <span>FIRETRACE PAKISTAN</span>
+
+            <span>
+                Research and decision-support prototype ·
+                Not an official early-warning service
+            </span>
+        </footer>
+
+    </main>
+
+
+    <!-- JAVASCRIPT LIBRARIES -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- PROJECT JAVASCRIPT -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+
+</html>
